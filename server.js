@@ -113,12 +113,12 @@ app.get('/login', function(req, res) {
   res.sendFile(path.join(__dirname, './views/login.html'));
 });
 
-global.username_1;
-global.email_1;
-global.id_1;
-global.phone_1;
-global.pw_1;
-global.name_1;
+var name_1="";
+var email_1="";
+var id_1="";
+var phone_1="";
+var pw_1="";
+var name_1="";
 
 
 //handling after login form submitted
