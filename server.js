@@ -4,8 +4,7 @@ const dp=require('./connection');
  passport = require("passport"),
 bodyParser = require("body-parser"),
 LocalStrategy = require("passport-local"),
-passportLocalMongoose = 
-        require("passport-local-mongoose")
+passportLocalMongoose = require("passport-local-mongoose")
 const app=express();
 const path=require('path');
 const nodemailer = require('nodemailer');
@@ -26,6 +25,8 @@ const alert = require('alert-node');
 const accountSid = 'ACf1312dd71e801f259015782aba72428c';
 const authToken = '657c6671a143e186a0db42a67aae8914';
 const client = require('twilio')(accountSid, authToken);
+
+
 //END TWILLO
 
 
@@ -128,11 +129,6 @@ app.post('/login',async(req, res)=> {
         req.session.email=user.email;
         req.session.id=user._id;
         req.session.phone=user.phone;
-         console.log(req.session.name);
-         console.log(req.session.email);
-         console.log(req.session.id);
-         console.log(req.session.phone);
-         
         res.redirect('/otpverify');
         }
         else{
@@ -211,8 +207,7 @@ app.post("/otpverify",(req,res)=>
 {
   const {text1,text2,text3,text4}=req.body;
   const enteredotp=text1+text2+text3+text4;
-  //if(enteredotp===req.session.otp)
-   if(enteredotp==="0000")
+  if(enteredotp===req.session.otp)
   {
     res.redirect(`/index/${req.session.id}`);//after login displaying it along with object id
   }
@@ -357,10 +352,13 @@ app.get('/index/:id',(req, res) => {
   //starting of bboking a load
   app.get("/bookload",async(req,res)=>{
     const id=req.session.id;
-    const loads=await PostLoad.find({})
+    const loads=await PostLoad.find({});
     
     res.render('bookload',{id:id,loads:loads});
   });
+
+
+
 
   //starting of filtering loading
   app.post("/filterload",async(req,res)=>{
@@ -399,11 +397,13 @@ app.get('/index/:id',(req, res) => {
 
 
   //starting of bboking a truckroute
-  app.get("/booktruck",async(req,res)=>{
+app.get("/booktruck",async(req,res)=>{
     const id=req.session.id;
     const trucks=await PostTruck.find({})
     res.render('booktruck',{id:id,trucks:trucks});
   });
+
+
   //sending details based on choose by form and to location
   app.post("/filtertruck",async(req,res)=>{
     const {fromlocation,tolocation}=req.body;
@@ -436,10 +436,15 @@ app.get('/index/:id',(req, res) => {
   //end of booking truck route
 
   //start of connecting end to end customers
-  app.all('/contact/:phone', (req, res) => {
+  app.get('/contact/:phone', (req, res) => {
     const name=req.session.name;
-    const phoneNumber = `${req.params.phone}`; // Replace with your phone number
-    const message = `Hello this is ${name}`; // Replace with your message
+    //const phoneNumber = `${req.params.phone}`; // Replace with your phone number
+    //const message = `Hello this is ${name}`; // Replace with your message
+    //const url = `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
+    //res.redirect(url);
+
+    const phoneNumber =`${req.params.phone}`; // Replace with your phone number
+    const message = `Hello this is  ${name}`; // Replace with your message
     const url = `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
     res.redirect(url);
 
@@ -461,8 +466,9 @@ app.get('/index/:id',(req, res) => {
 
   //end of handling whatsup message
   
-  app.listen(3001, () => {
+  app.listen(3000, () => {
     console.log('Server listening on port 3000');
+    console.log("this is from cargo connect");
   });
 
 
@@ -670,12 +676,18 @@ app.post('/enterlink',async(req,res)=>
 //send the link through wgatsup if corresct customer id
 
 app.post('/sendtracklink',async(req, res) => {
-  const {loadid,phone}=req.body;
+  var {loadid,phone}=req.body;
   try{
     const user=await Track.findOne({ loadid:loadid});
     console.log(user);
     if(user) {
-      const phoneNumber = phone; // Replace with your phone number
+    
+    //const phoneNumber = phone; // Replace with your phone number
+    //const message = `Hello this is your ${user.tracklink}`; // Replace with your message
+    //const url = `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
+    //res.redirect(url);
+
+    const phoneNumber = req.body.phone; // Replace with your phone number
     const message = `Hello this is your ${user.tracklink}`; // Replace with your message
     const url = `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
     res.redirect(url);
@@ -690,10 +702,4 @@ app.post('/sendtracklink',async(req, res) => {
      }
 })
 
-//
-
-
-app.listen(3000,()=>{
-    console.log('listening on port 3000');
-});
 
