@@ -4,9 +4,10 @@ const postload = new mongoose.Schema({
   tolocation: { type: String, required: true },
   loadtype: { type: String, required: true },
   quantity: { type: String, required: true },
-  price: { type: String, required: true },
-  description: { type: String, required: true },
   phone: { type: String, required: true },
+  price: { type: String, required: true },
+  description: { type: String, required: true }
+  
 });
 
 //PostLoad.plugin(passportLocalMongoose);
