@@ -6,7 +6,9 @@ mongoose.set('strictQuery',false);
 
 const connectionParams={
     useNewUrlParser: true, 
-    useUnifiedTopology: true
+    useUnifiedTopology: true,
+    connectTimeoutMS: 30000
+
 };
 const uri=`mongodb+srv://vasanthmarshal2020:${process.env.PASSWORD}@smtvasanth1.a2xrmit.mongodb.net/?retryWrites=true&w=majority`;
 
