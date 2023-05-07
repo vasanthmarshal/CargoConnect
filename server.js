@@ -113,6 +113,13 @@ app.get('/login', function(req, res) {
   res.sendFile(path.join(__dirname, './views/login.html'));
 });
 
+global.username_1;
+global.email_1;
+global.id_1;
+global.phone_1;
+global.pw_1;
+global.name_1;
+
 
 //handling after login form submitted
 app.post('/login',async(req, res)=> {
@@ -125,10 +132,10 @@ app.post('/login',async(req, res)=> {
         const result = password === user.password;
         if(result)
         {
-        req.session.name = user.username;
-        req.session.email=user.email;
-        req.session.id=user._id;
-        req.session.phone=user.phone;
+        name_1 = user.username;
+        email_1=user.email;
+        id_1=user._id;
+        phone_1=user.phone;
         res.redirect('/otpverify');
         }
         else{
@@ -158,18 +165,11 @@ app.post('/login',async(req, res)=> {
 
 app.get("/otpverify",(req,res)=>
 {
-  const name=req.session.name;
+  //const name=req.session.name;
   let password = Math.floor(Math.random() * 9000) + 1000; // Generate a random number between 1000 and 9999
   const pw=password.toString(); 
+  pw_1=pw;
 
-  /*client.messages
-          .create({
-             body: `Hello ${name} thanks for login in to our website and your OTP is ${pw}`,
-             from: '+16073502532',
-             to: `+917397106325`
-           })
-          .then(message => console.log(message.sid))
-          .catch(error => console.log(error));*/
 
           const transporter=nodemailer.createTransport({
             service:'gmail',
@@ -181,7 +181,7 @@ app.get("/otpverify",(req,res)=>
       
           const option3={
             from:'vasanthmarshal2020@gmail.com',
-            to:`${req.session.email}`,
+            to:`${email_1}`,
             subject:'From SMT Transport Manapparai',
             text:`the otp for your login is ${pw}`
           };
@@ -197,7 +197,7 @@ app.get("/otpverify",(req,res)=>
             }
           })
 
-  req.session.otp=pw;
+  //req.session.otp=pw;
    res.render("otpverify");
 });
 
@@ -207,12 +207,12 @@ app.post("/otpverify",(req,res)=>
 {
   const {text1,text2,text3,text4}=req.body;
   const enteredotp=text1+text2+text3+text4;
-  if(enteredotp==="0000")
+  if(enteredotp===pw_1)
   {
-    res.redirect(`/index/${req.session.id}`);//after login displaying it along with object id
+    res.redirect(`/index/${id_1}`);//after login displaying it along with object id
   }
   else{
-    alert(`Enter the correct Otp send to the phone number${req.session.phone}`);
+    alert(`Enter the correct Otp send to the phone number${phone_1}`);
   }
 });
 
@@ -225,12 +225,12 @@ app.post("/otpverify",(req,res)=>
 
 app.get('/index/:id',(req, res) => {
       //getting data from express session
-      const name=req.session.name;
-      const id=req.session.id;
+      //const name=req.session.name;
+      //const id=req.session.id;
       //console.log(id);
       //console.log(name);
       //end of the page
-      res.render('index', { username:name,id:id});  
+      res.render('index', { username:name_1,id:id_1});  
   });
 
 
@@ -287,7 +287,7 @@ app.get('/index/:id',(req, res) => {
       }
     })
 
-    res.redirect(`/index/${req.session.id}`);
+    res.redirect(`/index/${id_1}`);
 
   });
 
@@ -299,20 +299,20 @@ app.get('/index/:id',(req, res) => {
 
   //starting of posting a load route
   app.get("/postload",(req,res)=>{
-    const id=req.session.id;
+    //const id=req.session.id;
     //console.log(id);
-    res.render('postload',{id:id});
+    res.render('postload',{id:id_1});
   });
 
   app.post('/postload',(req,res)=>{
 
-    const id=req.session.id;
+    //const id=req.session.id;
     const {fromloc,toloc,loadtype,quantity,price,description,phone}=req.body;
     console.log(fromloc+toloc+loadtype+quantity+price+description+phone);
     const newload= new PostLoad({fromlocation:fromloc,tolocation:toloc,loadtype:loadtype,quantity:quantity,price:price,description:description,phone:phone});
     newload.save() 
     .then(() => {
-        res.redirect(`/index/${req.session.id}`);
+        res.redirect(`/index/${id_1}`);
       })
       .catch((err) => {
         console.log(err);
@@ -324,21 +324,21 @@ app.get('/index/:id',(req, res) => {
 
   //starting of posting a truckroute
   app.get("/posttruck",(req,res)=>{
-    const id=req.session.id;
+    //const id=req.session.id;
     //console.log(id);
-    res.render('posttruck',{id:id});
+    res.render('posttruck',{id:id_1});
   });
 
   app.post('/posttruck',(req,res)=>{
    
 
-    const id=req.session.id;
+    //const id=req.session.id;
     const {curloc,toloc,vehnumber,phone,vehtype,capacity}=req.body;
     console.log(curloc+toloc+vehnumber+phone+vehtype+capacity);
     const newtruck= new PostTruck({currentlocation:curloc,tolocation:toloc,vehiclenumber:vehnumber,phone:phone,vehicletype:vehtype,capacity:capacity});
     newtruck.save() 
     .then(() => {
-        res.redirect(`/index/${req.session.id}`);
+        res.redirect(`/index/${id_1}`);
       })
       .catch((err) => {
         console.log(err);
@@ -351,10 +351,10 @@ app.get('/index/:id',(req, res) => {
 
   //starting of bboking a load
   app.get("/bookload",async(req,res)=>{
-    const id=req.session.id;
+    //const id=req.session.id;
     const loads=await PostLoad.find({});
     
-    res.render('bookload',{id:id,loads:loads});
+    res.render('bookload',{id:id_1,loads:loads});
   });
 
 
@@ -398,9 +398,9 @@ app.get('/index/:id',(req, res) => {
 
   //starting of bboking a truckroute
 app.get("/booktruck",async(req,res)=>{
-    const id=req.session.id;
+    //const id=req.session.id;
     const trucks=await PostTruck.find({})
-    res.render('booktruck',{id:id,trucks:trucks});
+    res.render('booktruck',{id:id_1,trucks:trucks});
   });
 
 
@@ -437,14 +437,14 @@ app.get("/booktruck",async(req,res)=>{
 
   //start of connecting end to end customers
   app.get('/contact/:phone', (req, res) => {
-    const name=req.session.name;
+    ///const name=req.session.name;
     //const phoneNumber = `${req.params.phone}`; // Replace with your phone number
     //const message = `Hello this is ${name}`; // Replace with your message
     //const url = `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
     //res.redirect(url);
 
     const phoneNumber =`${req.params.phone}`; // Replace with your phone number
-    const message = `Hello this is  ${name}`; // Replace with your message
+    const message = `Hello this is  ${name_1}`; // Replace with your message
     const url = `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
     res.redirect(url);
 
@@ -459,7 +459,7 @@ app.get("/booktruck",async(req,res)=>{
 
   app.all('/whatsup', (req, res) => {
     const phoneNumber = '7397106325'; // Replace with your phone number
-    const message = `Hello this is ${req.session.name}`; // Replace with your message
+    const message = `Hello this is ${name_1}`; // Replace with your message
     const url = `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
     res.redirect(url);
   });
@@ -483,8 +483,8 @@ app.get("/booktruck",async(req,res)=>{
   
 
 
-app.get('/booking/:username', function(req, res) {
-   res.render('booking',{id:req.session.id});
+app.get('/booking', function(req, res) {
+   res.render('booking',{id:id_1});
   });
 
 
@@ -682,15 +682,38 @@ app.post('/sendtracklink',async(req, res) => {
     console.log(user);
     if(user) {
     
-    //const phoneNumber = phone; // Replace with your phone number
-    //const message = `Hello this is your ${user.tracklink}`; // Replace with your message
-    //const url = `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
-    //res.redirect(url);
+      /*const phoneNumber =phone; // Replace with your phone number
+      const message = `Hello this is ${name_1}`; // Replace with your message
+      const url = `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
+      res.redirect(url);*/
 
-    const phoneNumber = req.body.phone; // Replace with your phone number
-    const message = `Hello this is your ${user.tracklink}`; // Replace with your message
-    const url = `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
-    res.redirect(url);
+      const transporter=nodemailer.createTransport({
+        service:'gmail',
+        auth:{
+          user:'vasanthmarshal2020@gmail.com',
+          pass:process.env.PASSWORD1
+        }
+      });
+  
+      const option1={
+        from:'vasanthmarshal2020@gmail.com',
+        to:`${email_1}`,
+        subject:`From SMT Transport Manapparai `,
+        text:`your traking link ${user.tracklink}`
+      };
+  
+      transporter.sendMail(option1,function(error,info)
+      {
+        if(error)
+        {
+          console.log(error);
+        }
+        else{
+          res.redirect(`/index/${id_1}`)
+        }
+      })
+
+    
      }
      else
      {
