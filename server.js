@@ -7,6 +7,7 @@ LocalStrategy = require("passport-local"),
 passportLocalMongoose = require("passport-local-mongoose")
 const app=express();
 const path=require('path');
+const cookieParser = require('cookie-parser');
 const nodemailer = require('nodemailer');
 const cors=require('cors');
 require('dotenv').config();
@@ -69,6 +70,11 @@ app.use(session({
 //end od session initialization
 
 
+//using cookies//
+app.use(cookieParser());
+//
+
+
 
 
 
@@ -113,14 +119,6 @@ app.get('/login', function(req, res) {
   res.sendFile(path.join(__dirname, './views/login.html'));
 });
 
-var name_1;
-var email_1;
-var id_1;
-var phone_1;
-var pw_1;
-var name_1;
-
-
 //handling after login form submitted
 app.post('/login',async(req, res)=> {
     const username = req.body.username;
@@ -132,10 +130,18 @@ app.post('/login',async(req, res)=> {
         const result = password === user.password;
         if(result)
         {
-        name_1 = user.username;
-        email_1=user.email;
-        id_1=user._id;
-        phone_1=user.phone;
+
+        const data = {
+          name_1 :user.username,
+          email_1:user.email,
+          id_1:user._id,
+          phone_1:user.phone
+        };
+
+        const serializedData = JSON.stringify(data);
+
+        res.cookie('userdata', serializedData);
+        console.log('Cookies are set');
         res.redirect('/otpverify');
         }
         else{
@@ -168,7 +174,13 @@ app.get("/otpverify",(req,res)=>
   //const name=req.session.name;
   let password = Math.floor(Math.random() * 9000) + 1000; // Generate a random number between 1000 and 9999
   const pw=password.toString(); 
-  pw_1=pw;
+  const existingData = req.cookies.userdata;
+  const data1 = JSON.parse(existingData); 
+  data1.pw_1 =pw;
+  const updatedData = JSON.stringify(data1);
+  res.cookie('userdata', updatedData);
+  console.log('cookies have added succesfuuly');
+
 
 
           const transporter=nodemailer.createTransport({
@@ -178,10 +190,12 @@ app.get("/otpverify",(req,res)=>
               pass:process.env.PASSWORD1
             }
           });
-      
+          const user=req.cookies.userdata;
+          const  data=JSON.parse(user);
+
           const option3={
             from:'vasanthmarshal2020@gmail.com',
-            to:`${email_1}`,
+            to:`${data.email_1}`,
             subject:'From SMT Transport Manapparai',
             text:`the otp for your login is ${pw}`
           };
@@ -207,12 +221,14 @@ app.post("/otpverify",(req,res)=>
 {
   const {text1,text2,text3,text4}=req.body;
   const enteredotp=text1+text2+text3+text4;
-  if(enteredotp==="0000")
+  const user=req.cookies.userdata;
+  const  data=JSON.parse(user);
+  if(enteredotp===data.pw_1)
   {
-    res.redirect(`/index/${id_1}`);//after login displaying it along with object id
+    res.redirect(`/index/${data.id_1}`);//after login displaying it along with object id
   }
   else{
-    alert(`Enter the correct Otp send to the phone number${phone_1}`);
+    alert(`Enter the correct Otp send to the phone number${data.phone_1}`);
   }
 });
 
@@ -230,7 +246,9 @@ app.get('/index/:id',(req, res) => {
       //console.log(id);
       //console.log(name);
       //end of the page
-      res.render('index', { username:name_1,id:id_1});  
+      const user=req.cookies.userdata;
+      const  data=JSON.parse(user);
+      res.render('index', { username:data.name_1,id:data.id_1});  
   });
 
 
@@ -286,8 +304,10 @@ app.get('/index/:id',(req, res) => {
         console.log('mail.send',info);
       }
     })
+    const user=req.cookies.userdata;
+    const  data=JSON.parse(user);
 
-    res.redirect(`/index/${id_1}`);
+    res.redirect(`/index/${data.id_1}`);
 
   });
 
@@ -301,18 +321,22 @@ app.get('/index/:id',(req, res) => {
   app.get("/postload",(req,res)=>{
     //const id=req.session.id;
     //console.log(id);
-    res.render('postload',{id:id_1});
+    const user=req.cookies.userdata;
+    const  data=JSON.parse(user);
+    res.render('postload',{id:data.id_1});
   });
 
   app.post('/postload',(req,res)=>{
 
     //const id=req.session.id;
+    const user=req.cookies.userdata;
+    const  data=JSON.parse(user);
     const {fromloc,toloc,loadtype,quantity,price,description,phone}=req.body;
     console.log(fromloc+toloc+loadtype+quantity+price+description+phone);
     const newload= new PostLoad({fromlocation:fromloc,tolocation:toloc,loadtype:loadtype,quantity:quantity,price:price,description:description,phone:phone});
     newload.save() 
     .then(() => {
-        res.redirect(`/index/${id_1}`);
+        res.redirect(`/index/${data.id_1}`);
       })
       .catch((err) => {
         console.log(err);
@@ -326,19 +350,23 @@ app.get('/index/:id',(req, res) => {
   app.get("/posttruck",(req,res)=>{
     //const id=req.session.id;
     //console.log(id);
-    res.render('posttruck',{id:id_1});
+    const user=req.cookies.userdata;
+    const  data=JSON.parse(user);
+    res.render('posttruck',{id:data.id_1});
   });
 
   app.post('/posttruck',(req,res)=>{
    
 
     //const id=req.session.id;
+    const user=req.cookies.userdata;
+    const  data=JSON.parse(user);
     const {curloc,toloc,vehnumber,phone,vehtype,capacity}=req.body;
     console.log(curloc+toloc+vehnumber+phone+vehtype+capacity);
     const newtruck= new PostTruck({currentlocation:curloc,tolocation:toloc,vehiclenumber:vehnumber,phone:phone,vehicletype:vehtype,capacity:capacity});
     newtruck.save() 
     .then(() => {
-        res.redirect(`/index/${id_1}`);
+        res.redirect(`/index/${data.id_1}`);
       })
       .catch((err) => {
         console.log(err);
@@ -352,9 +380,11 @@ app.get('/index/:id',(req, res) => {
   //starting of bboking a load
   app.get("/bookload",async(req,res)=>{
     //const id=req.session.id;
+    const user=req.cookies.userdata;
+    const  data=JSON.parse(user);
     const loads=await PostLoad.find({});
     
-    res.render('bookload',{id:id_1,loads:loads});
+    res.render('bookload',{id:data.id_1,loads:loads});
   });
 
 
@@ -400,7 +430,9 @@ app.get('/index/:id',(req, res) => {
 app.get("/booktruck",async(req,res)=>{
     //const id=req.session.id;
     const trucks=await PostTruck.find({})
-    res.render('booktruck',{id:id_1,trucks:trucks});
+    const user=req.cookies.userdata;
+    const  data=JSON.parse(user);
+    res.render('booktruck',{id:data.id_1,trucks:trucks});
   });
 
 
@@ -437,14 +469,11 @@ app.get("/booktruck",async(req,res)=>{
 
   //start of connecting end to end customers
   app.get('/contact/:phone', (req, res) => {
-    ///const name=req.session.name;
-    //const phoneNumber = `${req.params.phone}`; // Replace with your phone number
-    //const message = `Hello this is ${name}`; // Replace with your message
-    //const url = `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
-    //res.redirect(url);
+    const user=req.cookies.userdata;
+    const  data=JSON.parse(user);
 
     const phoneNumber =`${req.params.phone}`; // Replace with your phone number
-    const message = `Hello this is  ${name_1}`; // Replace with your message
+    const message = `Hello this is  ${data.name_1}`; // Replace with your message
     const url = `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
     res.redirect(url);
 
@@ -458,8 +487,10 @@ app.get("/booktruck",async(req,res)=>{
  //code is working perfectly
 
   app.all('/whatsup', (req, res) => {
+    const user=req.cookies.userdata;
+    const  data=JSON.parse(user);
     const phoneNumber = '7397106325'; // Replace with your phone number
-    const message = `Hello this is ${name_1}`; // Replace with your message
+    const message = `Hello this is ${data.name_1}`; // Replace with your message
     const url = `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
     res.redirect(url);
   });
@@ -484,7 +515,9 @@ app.get("/booktruck",async(req,res)=>{
 
 
 app.get('/booking', function(req, res) {
-   res.render('booking',{id:id_1});
+  const user=req.cookies.userdata;
+  const  data=JSON.parse(user);
+   res.render('booking',{id:data.id_1});
   });
 
 
@@ -661,11 +694,13 @@ app.get('/enterlink',(req,res)=>
 app.post('/enterlink',async(req,res)=>
 {
     //const id=req.session.id;
+    const user=req.cookies.userdata;
+    const  data=JSON.parse(user);
     const {loadid,tracklink}=req.body;
     const newtrack= await new Track({loadid,tracklink});
     newtrack.save() 
     .then(() => {
-        res.redirect(`/index/123`);
+        res.redirect(`/index/data.id_1`);
       })
       .catch((err) => {
         console.log(err);
@@ -676,16 +711,16 @@ app.post('/enterlink',async(req,res)=>
 //send the link through wgatsup if corresct customer id
 
 app.post('/sendtracklink',async(req, res) => {
+  const user=req.cookies.userdata;
+  const  data=JSON.parse(user);
   var {loadid,phone}=req.body;
   try{
     const user=await Track.findOne({ loadid:loadid});
     console.log(user);
     if(user) {
+
+     
     
-      /*const phoneNumber =phone; // Replace with your phone number
-      const message = `Hello this is ${name_1}`; // Replace with your message
-      const url = `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
-      res.redirect(url);*/
 
       const transporter=nodemailer.createTransport({
         service:'gmail',
@@ -697,7 +732,7 @@ app.post('/sendtracklink',async(req, res) => {
   
       const option1={
         from:'vasanthmarshal2020@gmail.com',
-        to:`${email_1}`,
+        to:`${data.email_1}`,
         subject:`From SMT Transport Manapparai `,
         text:`your traking link ${user.tracklink}`
       };
@@ -709,7 +744,7 @@ app.post('/sendtracklink',async(req, res) => {
           console.log(error);
         }
         else{
-          res.redirect(`/index/${id_1}`)
+          res.redirect(`/index/${data.id_1}`)
         }
       })
 
