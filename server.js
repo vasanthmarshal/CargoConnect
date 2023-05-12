@@ -147,6 +147,7 @@ app.post('/login',async(req, res)=> {
         //res.redirect('/otpverify');
          const user1=req.cookies.userdata;
          const  data1=JSON.parse(user1);
+         
          res.redirect(`/index/${data1.id_1}`);
         }
         else{
