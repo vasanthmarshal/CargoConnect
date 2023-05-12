@@ -142,13 +142,7 @@ app.post('/login',async(req, res)=> {
 
         res.cookie('userdata', serializedData);
         console.log('Cookies are set');
-         
-         
-        //res.redirect('/otpverify');
-         const user1=req.cookies.userdata;
-         const  data1=JSON.parse(user1);
-         
-         res.redirect(`/index/${data1.id_1}`);
+        res.redirect('/otpverify');
         }
         else{
           res.render('alert', { message: 'Entered password is wrong' });
