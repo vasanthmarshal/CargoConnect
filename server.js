@@ -107,7 +107,7 @@ app.post('/signup', function(req, res) {
       })
       .catch((err) => {
         console.log(err);
-        res.send('Error saving data');
+        res.send('please Go back and signup again');
       });
 });
 
@@ -159,7 +159,7 @@ app.post('/login',async(req, res)=> {
       }
     }
       catch(err) {
-        res.send('Error saving data');
+        res.send('Please go back and login again,There is issue in connecting to database');
       }
         
 
